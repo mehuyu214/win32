@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>win32 — 制約サンドボックスVMで32ビットWindowsソフトウェアを動かす</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif; margin: 0; line-height: 1.8; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  h1 { font-size: 1.7rem; line-height: 1.4; margin-bottom: .4rem; }
+  .sub { opacity: .75; margin-top: 0; }
+  h2 { font-size: 1.2rem; border-bottom: 2px solid #8884; padding-bottom: .3rem; margin-top: 2.4rem; }
+  code { background: #8882; padding: .1em .4em; border-radius: 4px; }
+  ul { padding-left: 1.3rem; }
+  a { color: #2f6fed; }
+  .card { border: 1px solid #8884; border-radius: 10px; padding: 1rem 1.2rem; margin: 1rem 0; }
+  .num { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>win32 — 制約サンドボックスVMで<br>32ビットWindowsソフトウェアを動かす</h1>
+  <p class="sub">ユーザーモードQEMU ＋ Wine ＋ 独自スーパーバイザによる、レガシー32ビットWindows互換環境の構築と実測</p>
+
+  <h2>概要</h2>
+  <p>GPUなし・約1.5コア・数GBメモリという制約の強いLinuxサンドボックスVM上で、レガシーな32ビットWindowsアプリケーション／ゲームを実行するための環境構築と実測記録のプロジェクトです。対象ソフトウェア本体には一切手を入れず、すべての対策を環境側（エミュレータ／互換レイヤ／仮想デバイス／フォント）で完結させるのが設計原則です。</p>
+
+  <h2>アーキテクチャ</h2>
+  <ul>
+    <li><strong>QEMU (user-mode)</strong> — x86 32ビットバイナリの命令変換</li>
+    <li><strong>Wine 11.21 (32-bit)</strong> — Windows API互換レイヤ</li>
+    <li><strong>q32sup</strong> — 独自の監督プロセス（ptrace/seccomp）。ELF32の execve のみを傍受し、TOCTOU耐性のあるターゲット固定と正確な終了ステータス伝播を備えます</li>
+    <li><strong>仮想オーディオ</strong> — PulseAudio仮想シンクで音声を実際に供給し、供給率（delivery ratio）で定量評価</li>
+    <li><strong>仮想GPUパス</strong> — virgl によるホスト側レンダリング（llvmpipe との比較実測つき）</li>
+  </ul>
+
+  <h2>実測ハイライト</h2>
+  <div class="card"><span class="num">エミュレータのバージョン効果はタイトル依存</span> — フリーウェアのアクションゲーム『洞窟物語』では QEMU 7.2.22 が 10.0.2 の約9倍のテキスト描画速度を示した一方、別の描画エンジンを使う市販タイトル群では 7.2.22 は起動に失敗し 10.0.2 が正解でした。</div>
+  <div class="card"><span class="num">監督プロセスで約61倍の差</span> — q32sup と PRoot を同一条件で比較し、システムコール多用ワークロードで約61倍の差を実測。PRoot 配下では Wine がエラーを出さずに無言で終了する事象も確認しました。</div>
+  <div class="card"><span class="num">音声の供給率は競合が支配する</span> — VM単独では供給率 1.000（欠落ゼロ）を維持できる一方、並行負荷があると 0.56〜0.67 まで低下することを対照実験で確認しました。</div>
+  <div class="card"><span class="num">描画コストの所在を特定</span> — 部分転送（ダーティ領域のみの Present）最適化は実測で効果が認められず、コストはゲスト側GLパイプラインの完了待ちであることを切り分けました。</div>
+
+  <h2>関連リポジトリ</h2>
+  <ul>
+    <li><a href="https://github.com/mehuyu214/win32-env">win32-env</a> — 環境一式（q32sup、セットアップ／検証スクリプト、v0.1.0）</li>
+    <li><a href="https://github.com/mehuyu214/win32-compat">win32-compat</a> — 互換性検証の記録</li>
+    <li><a href="https://github.com/mehuyu214/win32-perf">win32-perf</a> — 描画・音声の性能実測</li>
+    <li><a href="https://github.com/mehuyu214/paper-qemu-wine">paper-qemu-wine</a> — 実証研究プレプリント</li>
+  </ul>
+
+  <h2>論文</h2>
+  <p>「制約サンドボックスVMにおけるユーザーモードQEMU+Wineによる32ビットWindowsゲーム実行の実証研究」— 方法と結果の詳細は <a href="https://github.com/mehuyu214/paper-qemu-wine">paper-qemu-wine</a> にて公開しています。</p>
+</div>
+</body>
+</html>
