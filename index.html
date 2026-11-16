@@ -24,6 +24,27 @@
   <p class="sub">ユーザーモードQEMU ＋ Wine ＋ 独自スーパーバイザによる、レガシー32ビットWindows互換環境の構築と実測</p>
   <p>GPUなし・約1.5コア・数GBメモリという制約の強いLinuxサンドボックスVM上で、レガシーな32ビットWindowsアプリケーション／ゲームを実行するための互換環境の構築記録です。対象ソフトウェア本体には一切手を入れず、すべての対策を環境側（エミュレータ／互換レイヤ／仮想デバイス／フォント）で完結させるのが設計原則です。このページ自体に解説を完結させています。</p>
 
+  <h2>ダウンロード</h2>
+  <p>プロジェクトの自作ファイル一式を、このリポジトリから直接ダウンロードできます。</p>
+  <ul>
+    <li><strong>一括ダウンロード（zip）</strong> — <a href="https://github.com/mehuyu214/win32/releases/download/files-20261116/win32-files-20261116.zip">win32-files-20261116.zip</a>（<a href="https://github.com/mehuyu214/win32/releases/tag/files-20261116">リリースページ</a>）。<code>files/</code> 一式＋各ファイルの SHA-256 を記した <code>MANIFEST.txt</code> を収録</li>
+    <li><strong>個別ファイル</strong> — <a href="https://github.com/mehuyu214/win32/tree/main/files">files/ ツリー</a>から1ファイルずつ取得できます</li>
+  </ul>
+  <p>主なファイル（いずれも MIT License）：</p>
+  <ul>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/q32sup/q32sup.c">q32sup/q32sup.c</a> — 監督プロセス本体。ELF32 の execve のみを傍受し、memfd 固定による TOCTOU 対策と終了ステータスの正確な伝播を実装</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/scripts/games/launch-game.sh">scripts/games/launch-game.sh</a> — 無改造の32ビット Windows ゲームを起動する汎用ランチャ（新規プレフィックスの自動ブート、日本語ロケール、音声ルート選択）</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/scripts/setup.sh">scripts/setup.sh</a> / <a href="https://github.com/mehuyu214/win32/blob/main/files/scripts/verify.sh">scripts/verify.sh</a> — 環境のセットアップと段階別検証</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/scripts/start-pa.sh">scripts/start-pa.sh</a> — 仮想オーディオ（PulseAudio）の起動</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/tools/delivery_ratio.py">tools/delivery_ratio.py</a> — 音声の供給率（delivery ratio）の算出</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/tools/eglprobe.py">tools/eglprobe.py</a> — EGL を実際に初期化して検証するプローブ</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/tools/make-subset-fonts.py">tools/make-subset-fonts.py</a> — 日本語サブセットフォント（10,250グリフ／書体）の生成器</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/tools/set-audio-driver.py">tools/set-audio-driver.py</a> — Wine プレフィックスの音声ドライバ設定（再読込で検証つき）</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/tests/d3d9test.c">tests/d3d9test.c</a> — Direct3D9 描画経路の切り分けテスト</li>
+    <li><a href="https://github.com/mehuyu214/win32/blob/main/files/docs/THIRD-PARTY.md">docs/THIRD-PARTY.md</a> — 第三者コンポーネントの出典とライセンス（第三者バイナリ自体は配布に含みません）</li>
+  </ul>
+  <p>各ファイルの説明は <a href="https://github.com/mehuyu214/win32/blob/main/files/README-files.md">files/README-files.md</a> にまとめています。</p>
+
   <h2>1. どうやって動かすか — アーキテクチャ</h2>
   <p>三層で構成します。</p>
   <ul>
