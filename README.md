@@ -2,6 +2,28 @@
 
 GPUなし・約1.5コア・数GBメモリという制約の強いLinuxサンドボックスVM上で、レガシーな32ビットWindowsアプリケーション／ゲームを実行するための互換環境の構築記録です。対象ソフトウェア本体には一切手を入れず、すべての対策を環境側（エミュレータ／互換レイヤ／仮想デバイス／フォント）で完結させるのが設計原則です。このページ自体に解説を完結させており、外部の記録へ辿らなくても全体像が分かるようにしています。
 
+## ダウンロード
+
+プロジェクトの自作ファイル一式を、このリポジトリから直接ダウンロードできます。
+
+- **一括ダウンロード（zip）**：[win32-files-20261116.zip](https://github.com/mehuyu214/win32/releases/download/files-20261116/win32-files-20261116.zip)（[リリースページ](https://github.com/mehuyu214/win32/releases/tag/files-20261116)）— `files/` 一式＋各ファイルの SHA-256 を記した `MANIFEST.txt` を収録
+- **個別ファイル**：[files/ ツリー](https://github.com/mehuyu214/win32/tree/main/files) から1ファイルずつ取得できます
+
+主なファイル（いずれも MIT License）：
+
+- [q32sup/q32sup.c](https://github.com/mehuyu214/win32/blob/main/files/q32sup/q32sup.c) — 監督プロセス本体。ELF32 の execve のみを傍受し、memfd 固定による TOCTOU 対策と終了ステータスの正確な伝播を実装
+- [scripts/games/launch-game.sh](https://github.com/mehuyu214/win32/blob/main/files/scripts/games/launch-game.sh) — 無改造の32ビット Windows ゲームを起動する汎用ランチャ（新規プレフィックスの自動ブート、日本語ロケール、音声ルート選択）
+- [scripts/setup.sh](https://github.com/mehuyu214/win32/blob/main/files/scripts/setup.sh) / [scripts/verify.sh](https://github.com/mehuyu214/win32/blob/main/files/scripts/verify.sh) — 環境のセットアップと段階別検証
+- [scripts/start-pa.sh](https://github.com/mehuyu214/win32/blob/main/files/scripts/start-pa.sh) — 仮想オーディオ（PulseAudio）の起動
+- [tools/delivery_ratio.py](https://github.com/mehuyu214/win32/blob/main/files/tools/delivery_ratio.py) — 音声の供給率（delivery ratio）の算出
+- [tools/eglprobe.py](https://github.com/mehuyu214/win32/blob/main/files/tools/eglprobe.py) — EGL を実際に初期化して検証するプローブ
+- [tools/make-subset-fonts.py](https://github.com/mehuyu214/win32/blob/main/files/tools/make-subset-fonts.py) — 日本語サブセットフォント（10,250グリフ／書体）の生成器
+- [tools/set-audio-driver.py](https://github.com/mehuyu214/win32/blob/main/files/tools/set-audio-driver.py) — Wine プレフィックスの音声ドライバ設定（再読込で検証つき）
+- [tests/d3d9test.c](https://github.com/mehuyu214/win32/blob/main/files/tests/d3d9test.c) — Direct3D9 描画経路の切り分けテスト
+- [docs/THIRD-PARTY.md](https://github.com/mehuyu214/win32/blob/main/files/docs/THIRD-PARTY.md) — 第三者コンポーネントの出典とライセンス（第三者バイナリ自体は配布に含みません）
+
+各ファイルの説明は [files/README-files.md](https://github.com/mehuyu214/win32/blob/main/files/README-files.md) にまとめています。
+
 ## 1. どうやって動かすか — アーキテクチャ
 
 三層で構成します。
